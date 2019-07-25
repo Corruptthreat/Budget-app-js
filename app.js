@@ -10,6 +10,13 @@ var budgetController = (function(id, description, value) {
     this.description = description;
     this.value = value;
   };
+  var calculateTotal = function(type) {
+    var sum = 0;
+    data.allItems[type].forEach(function(cur) {
+      sum += cur.value;
+    });
+    data.totals[type] = sum;
+  };
 
   var totalexp = [];
   var data = {
@@ -18,29 +25,49 @@ var budgetController = (function(id, description, value) {
       incData: []
     },
     totals: {
-      exp : 0,
-      inc : 0
+      exp: 0,
+      inc: 0
+    },
+    budget: {
+      percentage: -1
     }
   };
-  return{
-    addItem : function(type,des,val){
-      var newItem,ID; 
-      if(data.allItems[type].length>0)
-      ID = data,allItems[type][data.allItems[type].length - 1].id + 1;
-      else{
+
+  return {
+    addItem: function(type, des, val) {
+      var newItem, ID;
+      if (data.allItems[type].length > 0){
+        ID = data.allItems[type][data.allItems[type].length - 1].id + 1;
+      }else {
         ID = 0;
       }
-      if(type=='exp'){
-        newItem = new Expense(ID,des,value);
-      }
-      else if(type=='inc'){
-        newItem = new Income(ID,des,value);
+      if (type == "exp") {
+        newItem = new Expense(ID, des, val);
+      } else if (type == "inc") {
+        newItem = new Income(ID, des, val);
       }
       data.allItems[type].push(newItem);
       return newItem;
-      
     },
-    testing : function(){
+    calculateBudget: function() {
+      //calculate total income and expenses
+      calculateTotal("exp");
+      calculateTotal("inc");
+      //calculate the budget: income - expensessss
+      data.budget = data.totals.inc - data.totals.exp;
+      //cal percentage of income
+      data.percentage = Math.round((data.totals.exp / data.totals.inc) * 100);
+    },
+    getBudget: function() {
+      return {
+        budget: data.budget,
+        totalIncome: data.totals.inc,
+        totalExpense: data.totals.exp,
+        percentage: data.percentage
+      };
+    },
+
+    testing: function() {
       console.log(data);
     }
   };
@@ -79,12 +106,21 @@ var controller = (function(budgetContrlr, UIContrl) {
       }
     });
   };
+  var updateBudget = function() {
+    budgetContrlr.calculateBudget();
+    //returns the budget
+    var budget = budgetContrlr.getBudget();
+    //display the buddget
+    console.log(budget);
+  };
 
   var ctrlAddItem = function() {
     var input, newItem;
     input = UIContrl.getInput();
-    newItem = budgetContrlr.addItem(input.type,input.description,input.value);
+    if(input.description !==""&& !isNaN(input.value)&& input.value >0){
+    newItem = budgetContrlr.addItem(input.type, input.description, input.value);
   };
+}
   return {
     init: function() {
       console.log("run");
