@@ -147,7 +147,7 @@ var controller = (function(budgetContrlr, UIContrl) {
 
   return {
     init: function() {
-      console.log("run");
+      console.log("ok tested");
       eventLisetener();
     }
   };
